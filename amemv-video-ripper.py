@@ -88,13 +88,17 @@ class DownloadWorker(Thread):
 class CrawlerScheduler(object):
 
     def __init__(self, numbers):
+        #把ｎｕｍｂｅｒ列表传给实例属性
         self.numbers = numbers
+        # 生成一个队列
         self.queue = Queue.Queue()
+        # 运行
         self.scheduling()
 
     def scheduling(self):
         # create workers
         for x in range(THREADS):
+
             worker = DownloadWorker(self.queue)
             # Setting daemon to True will let the main thread exit
             # even though the workers are blocking
@@ -114,8 +118,9 @@ class CrawlerScheduler(object):
     def _download_media(self, number):
         current_folder = os.getcwd()
         target_folder = os.path.join(current_folder, 'download/%s' % number)
-        if not os.path.isdir(target_folder):
-            os.mkdir(target_folder)
+        if not os.path.exists(target_folder):
+            #保证了即使ｄｏｗｎｌｏａｄ父级目录不存在也不会报错
+            os.makedirs(target_folder)
         base_url = "https://api.amemv.com/aweme/v1/discover/search/?{0}"
         params = {
             'iid': '26666102238',
@@ -233,7 +238,7 @@ def parse_sites(fileName):
 
 if __name__ == "__main__":
     numbers = None
-
+    #不输入参数就读取ｕｓｅｒ－ｎｕｍｂｅｒ文件，否则获取参数
     if len(sys.argv) < 2:
         # check the sites file
         filename = "user-number.txt"
@@ -248,4 +253,5 @@ if __name__ == "__main__":
     if len(numbers) == 0 or numbers[0] == "":
         usage()
         sys.exit(1)
+    # 运行主程序，传入参数
     CrawlerScheduler(numbers)
